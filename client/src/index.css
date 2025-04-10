@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@plugin "daisyui";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+* {
+    font-family: 'Outfit';
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
