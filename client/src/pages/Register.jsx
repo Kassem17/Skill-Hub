@@ -8,7 +8,8 @@ import { toast } from "react-toastify";
 const Register = () => {
   const [focusedField, setFocusedField] = useState("");
 
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -25,7 +26,8 @@ const Register = () => {
       const { data } = await axios.post(
         "http://localhost:5000/api/user/register",
         {
-          username,
+          firstName,
+          lastName,
           email,
           password,
         }
@@ -50,25 +52,47 @@ const Register = () => {
           Create an Account
         </h2>
 
-        {/* Username Input */}
-        {/* Password Input */}
+        {/* firstName Input */}
         <div className="relative group">
           <label
-            htmlFor="username"
+            htmlFor="firstName"
             className={`absolute left-4 text-white text-base pointer-events-none transition-all duration-300 transform ${
-              focusedField === "username" || username
+              focusedField === "firstName" || firstName
                 ? "-translate-y-6 text-sm text-gray-300"
                 : "top-1/2 -translate-y-1/2"
             }`}
           >
-            Username
+            First Name
           </label>
           <input
-            id="username"
+            id="firstName"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onFocus={() => handleFocus("username")}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            onFocus={() => handleFocus("firstName")}
+            onBlur={handleBlur}
+            className="w-full h-14 bg-transparent border-b-2 border-gray-400 outline-none text-white placeholder-transparent focus:ring-2 focus:ring-blue-400 px-4 py-3 transition-all duration-300 ease-in-out"
+          />
+        </div>
+
+        {/* lastName Input */}
+        <div className="relative group">
+          <label
+            htmlFor="lastName"
+            className={`absolute left-4 text-white text-base pointer-events-none transition-all duration-300 transform ${
+              focusedField === "lastName" || lastName
+                ? "-translate-y-6 text-sm text-gray-300"
+                : "top-1/2 -translate-y-1/2"
+            }`}
+          >
+            Last Name
+          </label>
+          <input
+            id="lastName"
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            onFocus={() => handleFocus("lastName")}
             onBlur={handleBlur}
             className="w-full h-14 bg-transparent border-b-2 border-gray-400 outline-none text-white placeholder-transparent focus:ring-2 focus:ring-blue-400 px-4 py-3 transition-all duration-300 ease-in-out"
           />

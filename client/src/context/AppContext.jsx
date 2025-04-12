@@ -1,6 +1,5 @@
 import axios from "axios";
-import { createContext, use, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { createContext, useEffect, useState } from "react";
 
 export const AppContext = createContext();
 
@@ -8,13 +7,25 @@ export const AppContextProvider = ({ children }) => {
   const [token, setToken] = useState(
     localStorage.getItem("token") ? localStorage.getItem("token") : ""
   );
-
   const [skills, setSkills] = useState([]);
   const [user, setUser] = useState([]);
-  const [usersData, setUsersData] = useState({});
+  const [users, setUsers] = useState([]);
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        "http://localhost:5000/api/user/get-users"
+      );
+      if (data.success) {
+        setUsers(data.users);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-
-
+  useEffect(() => {
+    getAllUsers();
+  }, []);
   const getSkills = async () => {
     try {
       const { data } = await axios.get(
@@ -34,7 +45,7 @@ export const AppContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (token) {
+    if ((token)) {
       getSkills();
     }
   }, [token]);
@@ -51,6 +62,7 @@ export const AppContextProvider = ({ children }) => {
       );
       if (data.success) {
         setUser(data.user);
+        console.log(data.user);
       }
     } catch (error) {
       console.log(error);
@@ -62,24 +74,6 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [token]);
 
-  const getAllUsers = async () => {
-    try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/user/get-users"
-      );
-      if (data.success) {
-        setUsersData(data.users);
-        console.log(data.users);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getAllUsers();
-  }, []);
-
   const value = {
     token,
     setToken,
@@ -87,7 +81,8 @@ export const AppContextProvider = ({ children }) => {
     setSkills,
     getUserProfile,
     user,
-    usersData,
+    users,
+    getSkills,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

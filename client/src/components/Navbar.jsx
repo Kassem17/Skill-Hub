@@ -55,14 +55,18 @@ const Navbar = () => {
         {/* Navigation Links */}
 
         {/* user name */}
-        <motion.div whileHover={{ scale: 1.05 }}>
-          <Link
-            to={`/profile/${user._id}`}
-            className="hover:text-yellow-200 transition duration-300"
-          >
-            {user.username}
-          </Link>
-        </motion.div>
+        {token && (
+          <motion.div whileHover={{ scale: 1.05 }}>
+            <Link
+              to={`/profile/${user._id}`}
+              className="hover:text-yellow-200 transition duration-300"
+            >
+              {user.role === "admin"
+                ? "Admin"
+                : `${user.firstName} ${user.lastName}`}
+            </Link>
+          </motion.div>
+        )}
 
         <div className="flex gap-6 items-center text-sm font-medium">
           <motion.div whileHover={{ scale: 1.05 }}>
@@ -74,16 +78,18 @@ const Navbar = () => {
             </Link>
           </motion.div>
 
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Link
-              to="/skills"
-              className="hover:text-yellow-200 transition duration-300"
-            >
-              Skills
-            </Link>
-          </motion.div>
+          {token && user.role === "user" && (
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <Link
+                to="/skills"
+                className="hover:text-yellow-200 transition duration-300"
+              >
+                Skills
+              </Link>
+            </motion.div>
+          )}
 
-          {token && (
+          {user.role === "user" ? (
             <motion.div whileHover={{ scale: 1.05 }}>
               <Link
                 to="/add-skills"
@@ -92,6 +98,17 @@ const Navbar = () => {
                 Add Skills
               </Link>
             </motion.div>
+          ) : (
+            token && (
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Link
+                  to="/add-users"
+                  className="hover:text-yellow-200 transition duration-300"
+                >
+                  Add Users
+                </Link>
+              </motion.div>
+            )
           )}
 
           {token ? (

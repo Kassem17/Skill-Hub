@@ -17,6 +17,8 @@ const skillSchema = new mongoose.Schema(
     progress: {
       type: Number,
       required: true,
+      min: 0,
+      max: 100,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,35 +1,24 @@
-import { useContext, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
+import Undefined from "../pages/Undefined";
+import { motion } from "framer-motion";
 import axios from "axios";
-import Undefined from "./Undefined";
 import { toast } from "react-toastify";
 
-export default function AddSkill() {
-  const { token, setSkills ,getSkills} = useContext(AppContext);
+const AddUser = () => {
+  const { token, user } = useContext(AppContext);
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [goal, setGoal] = useState("");
-  const [progress, setProgress] = useState("");
-  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-
-      const skillData = {
-        name,
-        description,
-        goal,
-        progress,
-      };
-
-      console.log(skillData);
-
       const { data } = await axios.post(
-        "http://localhost:5000/api/skills/add-skill",
-        skillData,
+        "http://localhost:5000/api/user/add-user",
+        { email, password, firstName, lastName },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -37,23 +26,20 @@ export default function AddSkill() {
         }
       );
       if (data.success) {
-        setSkills(data.skills);
         toast.success(data.message);
-        setName("");
-        setDescription("");
-        setGoal("");
-        setProgress("");
-        getSkills();
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setPassword("");
       } else {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.message);
     }
   };
 
-  return token ? (
+  return token && user.role === "admin" ? (
     <div className="flex items-center justify-center  w-full bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4">
       <motion.div
         className="w-full max-w-4xl rounded-3xl shadow-2xl bg-white/60 backdrop-blur-xl border border-white/40 p-10"
@@ -68,37 +54,67 @@ export default function AddSkill() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          🌟 Add a New Skill
+          🌟 Add a New User
         </motion.h2>
 
         {/* Form */}
         <form className="grid gap-8">
-          {/* Row 1: Name */}
+          {/* Row 1: first name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="relative">
               <motion.label
-                htmlFor="name"
+                htmlFor="firstName"
                 animate={{
-                  top: name ? -12 : 12,
+                  top: firstName ? -12 : 12,
                   left: 16,
-                  fontSize: name ? "0.75rem" : "1rem",
-                  color: name ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
-                  backgroundColor: name ? "#ffffff" : "transparent",
-                  padding: name ? "0 0.25rem" : "0",
-                  borderRadius: name ? "0.375rem" : "0",
-                  boxShadow: name ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+                  fontSize: firstName ? "0.75rem" : "1rem",
+                  color: firstName ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
+                  backgroundColor: firstName ? "#ffffff" : "transparent",
+                  padding: firstName ? "0 0.25rem" : "0",
+                  borderRadius: firstName ? "0.375rem" : "0",
+                  boxShadow: firstName ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="absolute pointer-events-none z-10"
               >
-                Name
+                First Name
               </motion.label>
 
               <motion.input
                 type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full pt-8 pb-3 px-4 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
+                whileFocus={{ scale: 1.02 }}
+              />
+            </div>
+
+            {/* last name */}
+            <div className="relative">
+              <motion.label
+                htmlFor="lastName"
+                animate={{
+                  top: lastName ? -12 : 12,
+                  left: 16,
+                  fontSize: lastName ? "0.75rem" : "1rem",
+                  color: lastName ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
+                  backgroundColor: lastName ? "#ffffff" : "transparent",
+                  padding: lastName ? "0 0.25rem" : "0",
+                  borderRadius: lastName ? "0.375rem" : "0",
+                  boxShadow: lastName ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="absolute pointer-events-none z-10"
+              >
+                Last Name
+              </motion.label>
+
+              <motion.input
+                type="text"
+                id="firstName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 className="w-full pt-8 pb-3 px-4 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
                 whileFocus={{ scale: 1.02 }}
               />
@@ -107,28 +123,28 @@ export default function AddSkill() {
             {/* Row 1: Goal */}
             <div className="relative">
               <motion.label
-                htmlFor="goal"
+                htmlFor="email"
                 animate={{
-                  top: goal ? -12 : 12,
+                  top: email ? -12 : 12,
                   left: 16,
-                  fontSize: goal ? "0.75rem" : "1rem",
-                  color: goal ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
-                  backgroundColor: goal ? "#ffffff" : "transparent",
-                  padding: goal ? "0 0.25rem" : "0",
-                  borderRadius: goal ? "0.375rem" : "0",
-                  boxShadow: goal ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+                  fontSize: email ? "0.75rem" : "1rem",
+                  color: email ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
+                  backgroundColor: email ? "#ffffff" : "transparent",
+                  padding: email ? "0 0.25rem" : "0",
+                  borderRadius: email ? "0.375rem" : "0",
+                  boxShadow: email ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="absolute pointer-events-none z-10"
               >
-                Goal
+                Email
               </motion.label>
 
               <motion.input
                 type="text"
-                id="goal"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full pt-8 pb-3 px-4 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
                 whileFocus={{ scale: 1.02 }}
               />
@@ -139,64 +155,33 @@ export default function AddSkill() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="relative">
               <motion.label
-                htmlFor="progress"
+                htmlFor="password"
                 animate={{
-                  top: progress ? -12 : 12,
+                  top: password ? -12 : 12,
                   left: 16,
-                  fontSize: progress ? "0.75rem" : "1rem",
-                  color: progress ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
-                  backgroundColor: progress ? "#ffffff" : "transparent",
-                  padding: progress ? "0 0.25rem" : "0",
-                  borderRadius: progress ? "0.375rem" : "0",
-                  boxShadow: progress ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+                  fontSize: password ? "0.75rem" : "1rem",
+                  color: password ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
+                  backgroundColor: password ? "#ffffff" : "transparent",
+                  padding: password ? "0 0.25rem" : "0",
+                  borderRadius: password ? "0.375rem" : "0",
+                  boxShadow: password ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="absolute pointer-events-none z-10"
               >
-                Progress
+                Password
               </motion.label>
 
               <motion.input
-                type="number"
-                id="progress"
-                value={progress}
-                onChange={(e) => setProgress(e.target.value)}
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full pt-8 pb-3 px-4 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
                 whileFocus={{ scale: 1.02 }}
               />
             </div>
           </div>
-
-          {/* Row 3: Description (Full Width) */}
-          <div className="relative">
-            <motion.label
-              htmlFor="description"
-              animate={{
-                top: description ? -12 : 12,
-                left: 16,
-                fontSize: description ? "0.75rem" : "1rem",
-                color: description ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
-                backgroundColor: description ? "#ffffff" : "transparent",
-                padding: description ? "0 0.25rem" : "0",
-                borderRadius: description ? "0.375rem" : "0",
-                boxShadow: description ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="absolute pointer-events-none z-10"
-            >
-              Description
-            </motion.label>
-
-            <motion.textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={5}
-              className="w-full h-32 pt-6 pb-3 px-4 resize-none border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
-              whileFocus={{ scale: 1.02 }}
-            />
-          </div>
-
           {/* Row 4: Button */}
           <motion.div
             className="flex justify-center mt-4"
@@ -217,4 +202,6 @@ export default function AddSkill() {
   ) : (
     <Undefined />
   );
-}
+};
+
+export default AddUser;

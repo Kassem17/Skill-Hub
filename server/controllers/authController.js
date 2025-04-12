@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import Skill from "../models/Skill.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -16,7 +17,8 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = new User({
-      username,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
     });
@@ -42,6 +44,13 @@ export const loginUser = async (req, res) => {
     console.log(email, password);
 
     const user = await User.findOne({ email });
+
+    if (!user.active) {
+      return res.json({
+        success: false,
+        message: "User is not active",
+      });
+    }
 
     if (!user) {
       return res.json({
@@ -103,6 +112,10 @@ export const getUser = async (req, res) => {
 
     const user = await User.findById(userId).lean().select("-password");
 
+    if (user.role === "user") {
+      return res.status(200).json({ success: true, user });
+    }
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -118,13 +131,110 @@ export const getUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
-
+    const users = await User.find({ role: { $ne: "admin" } })
+      .select("-password")
+      .lean();
     return res.status(200).json({ success: true, users });
   } catch (error) {
-    logger.error(error);
+    console.error("Error in getAllUsers:", error);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOneAndDelete({ _id: userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    } else {
+      await Skill.deleteMany({ user: userId });
+      return res.json({ message: "User deleted successfully" });
+    }
+  } catch (error) {
+    console.error("Error in getAllUsers:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+export const addUser = async (req, res) => {
+  try {
+    const userId = req.user;
+
+    const admin = await User.findById(userId);
+
+    if (!admin || admin.role !== "admin") {
+      return res.status(401).json({ message: "Only admin can add users" });
+    }
+
+    const { firstName, lastName, email, password } = req.body;
+
+    // Basic validation
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const userExists = await User.findOne({ email });
+
+    if (userExists) {
+      return res.json({ success: false, message: "User already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    return res.json({
+      success: true,
+      message: "User added successfully",
+      user: {
+        id: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error in addUser:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
+export const changeAvailability = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.json({ message: "User not found" });
+    }
+
+    user.active = !user.active;
+    await user.save();
+
+    return res.json({
+      success: true,
+      user,
+      message: "Availability changed successfully",
+    });
+  } catch (error) {
+    console.error("Error in changeAvailability:", error);
+    return res.json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
