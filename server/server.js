@@ -5,6 +5,7 @@ import userRouter from "./routes/userRouter.js";
 import skillRouter from "./routes/skillRouter.js";
 
 connectDB();
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
