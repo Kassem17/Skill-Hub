@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom"; // Import useParams
 import SkillCard from "../components/SkillCard";
 import Loader from "../components/Loader";
+import { AppContext } from "../context/AppContext";
 
 const UserDetails = () => {
   const { userId } = useParams();
@@ -10,6 +11,7 @@ const UserDetails = () => {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { backendUrl } = useContext(AppContext);
 
   useEffect(() => {
     if (!userId) return;
@@ -17,7 +19,7 @@ const UserDetails = () => {
     const fetchSkills = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/api/skills/get-skills-for-user/${userId}`
+          backendUrl + `/api/skills/get-skills-for-user/${userId}`
         );
         if (data.success) {
           setSkills(data.skills);
@@ -45,9 +47,9 @@ const UserDetails = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-        Skills for{" "}
-        <span className="text-blue-600 font-semibold underline">
-          {user.username}
+        Skills for:{" "}
+        <span className="text-blue-600 font-semibold underline ">
+          {user.firstName}
         </span>
       </h1>
 

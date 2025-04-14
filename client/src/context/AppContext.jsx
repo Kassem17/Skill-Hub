@@ -1,6 +1,5 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
-
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
@@ -10,11 +9,12 @@ export const AppContextProvider = ({ children }) => {
   const [skills, setSkills] = useState([]);
   const [user, setUser] = useState([]);
   const [users, setUsers] = useState([]);
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const getAllUsers = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/user/get-users"
-      );
+      const { data } = await axios.get(backendUrl + "/api/user/get-users");
       if (data.success) {
         setUsers(data.users);
       }
@@ -28,14 +28,11 @@ export const AppContextProvider = ({ children }) => {
   }, []);
   const getSkills = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/skills/get-skills",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const { data } = await axios.get(backendUrl + "/api/skills/get-skills", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (data.success) {
         setSkills(data.skills);
       }
@@ -45,24 +42,20 @@ export const AppContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if ((token)) {
+    if (token) {
       getSkills();
     }
   }, [token]);
 
   const getUserProfile = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/user/get-profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const { data } = await axios.get(backendUrl + "/api/user/get-profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (data.success) {
         setUser(data.user);
-        console.log(data.user);
       }
     } catch (error) {
       console.log(error);
@@ -75,6 +68,7 @@ export const AppContextProvider = ({ children }) => {
   }, [token]);
 
   const value = {
+    backendUrl,
     token,
     setToken,
     skills,

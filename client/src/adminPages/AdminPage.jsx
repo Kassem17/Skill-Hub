@@ -1,18 +1,19 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import skillsIcon from "../assets/skills.png";
 import usersIcon from "../assets/users.png";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 import axios from "axios";
+import Loader from "../components/Loader";
 
 const AdminPage = () => {
-  const { users, skills, getAllUsers, token } = useContext(AppContext);
-  console.log(users);
+  const { users, skills, token, backendUrl } = useContext(AppContext);
+  const [loading, setLoading] = useState(true);
 
   const handleDelete = async (userId) => {
     try {
       const { data } = await axios.delete(
-        `http://localhost:5000/api/user/delete-user/` + userId,
+        backendUrl + `/api/user/delete-user/` + userId,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -20,8 +21,7 @@ const AdminPage = () => {
         }
       );
       if (data.success) {
-        toast.error(data.message);
-        getAllUsers();
+        toast.success(data.message);
       } else {
         toast.error(data.message);
       }
@@ -32,12 +32,11 @@ const AdminPage = () => {
 
   const handleChangeStatus = async (userId) => {
     try {
-      const { data } = axios.post(
-        "http://localhost:5000/api/user/change-availability/" + userId
+      const { data } = await axios.post(
+        backendUrl + "/api/user/change-availability/" + userId
       );
       if (data.success) {
         toast.success(data.message);
-        
       } else {
         toast.error(data.message);
       }
@@ -46,6 +45,15 @@ const AdminPage = () => {
     }
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="flex flex-col gap-10 p-4 md:p-8 bg-gray-50">
       {/* Stats Section */}
@@ -87,10 +95,11 @@ const AdminPage = () => {
                   #
                 </th>
                 {/* <th className="px-4 py-3">profile Image</th> */}
+                <th className="px-4 py-3">Profile Image</th>
                 <th className="px-4 py-3">First Name</th>
                 <th className="px-4 py-3">Last Name</th>
-                <th className="px-4 py-3">Skill</th>
-                <th className="px-4 py-3">Action</th>
+                <th className="px-4 py-3 text-center">Email</th>
+                <th className="px-4 py-3 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -99,9 +108,13 @@ const AdminPage = () => {
                   <td className="px-4 py-3 text-center hidden md:table-cell text-gray-500">
                     {index + 1}
                   </td>
-                  {/* <td className="px-4 py-3 flex items-center gap-3 text-gray-700">                   
-                    <img src={user.imageUrl} alt="Profile" className="w-8 h-8 rounded-full" />
-                  </td> */}
+                  <td className="px-4 py-3 flex items-center gap-3 text-gray-700 justify-center">
+                    <img
+                      src={user.profileImage}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                  </td>
                   <td className="px-4 py-3 text-left  md:table-cell text-gray-500">
                     <span className="truncate">{user.firstName}</span>
                   </td>
@@ -119,13 +132,21 @@ const AdminPage = () => {
                     <div className="flex flex-row gap-2">
                       <button
                         onClick={() => handleDelete(user._id)}
-                        className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+                        className="w-32 h-10 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-full shadow-md transition duration-300 ease-in-out ml-2"
                       >
                         Delete
-                      </button>{" "}
+                      </button>
+
                       <button
                         onClick={() => handleChangeStatus(user._id)}
-                        className=" text-white size-1/2 text-[15px] bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded ml-2"
+                        className={`text-white text-sm font-semibold rounded-full transition duration-300 ease-in-out 
+                                       w-32 h-10 shadow-md ml-2
+                                                    ${
+                                                      user.active
+                                                        ? "bg-rose-500 hover:bg-rose-600"
+                                                        : "bg-emerald-500 hover:bg-emerald-600"
+                                                    }
+                                                    `}
                       >
                         {user.active ? "Deactivate" : "Activate"}
                       </button>

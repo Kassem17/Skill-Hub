@@ -65,13 +65,13 @@ export const getSkills = async (req, res) => {
     const skills = await Skill.find({ user: userId });
 
     if (!skills || skills.length === 0) {
-      return res.status(404).json({
+      return res.json({
         success: false,
         message: "No skills found for this user.",
       });
     }
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       message: "Skills fetched successfully",
       skills,

@@ -4,21 +4,22 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import Users from "./Users";
 import AdminPage from "../adminPages/AdminPage";
+import Loader from "../components/Loader";
 
 const Dashboard = () => {
   const { skills, token, user } = useContext(AppContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setLoading(false);
-  //   }, 2000);
-  // }, []);
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  }, []);
 
-  // if (loading) {
-  //   return <Loader />;
-  // }
+  if (loading) {
+    return <Loader />;
+  }
   return !token ? (
     <Users />
   ) : user.role === "admin" ? (

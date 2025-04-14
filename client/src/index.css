@@ -23,3 +23,8 @@
 ::-webkit-scrollbar {
     display: none;
 }
+
+
+.group:hover .group-hover\:opacity-100 {
+    pointer-events: all;
+  }

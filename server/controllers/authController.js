@@ -7,6 +7,8 @@ export const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
 
+    const image = req.file;
+
     const userExists = await User.findOne({ email });
 
     if (userExists) {
@@ -21,6 +23,10 @@ export const registerUser = async (req, res) => {
       lastName,
       email,
       password: hashedPassword,
+      profileImage: {
+        data: image.buffer,
+        contentType: image.mimeType,
+      },
     });
 
     await user.save();
@@ -36,7 +42,6 @@ export const registerUser = async (req, res) => {
     return res.json({ success: false, message: error.message });
   }
 };
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -82,7 +87,6 @@ export const loginUser = async (req, res) => {
     });
   }
 };
-
 export const logoutUser = (req, res) => {
   try {
     // For JWT-based auth, the server doesn't need to do much.
@@ -100,29 +104,88 @@ export const logoutUser = (req, res) => {
   }
 };
 
+// export const getUser = async (req, res) => {
+//   try {
+//     const userId = req.user;
+
+//     if (!userId) {
+//       return res
+//         .status(400)
+//         .json({ message: "User ID is missing from request" });
+//     }
+
+//     const user = await User.findById(userId).lean().select("-password");
+
+//     if (user.role === "user") {
+//       return res.status(200).json({ success: true, user });
+//     }
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     return res.status(200).json({ success: true, user });
+//   } catch (error) {
+//     console.error("Error in getUser:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Server error", error: error.message });
+//   }
+// };
+
 export const getUser = async (req, res) => {
   try {
     const userId = req.user;
-
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ message: "User ID is missing from request" });
-    }
-
-    const user = await User.findById(userId).lean().select("-password");
-
-    if (user.role === "user") {
-      return res.status(200).json({ success: true, user });
-    }
+    const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.json({
+        success: false,
+        message: "user not found",
+      });
     }
 
-    return res.status(200).json({ success: true, user });
+    let profileImage = null;
+
+    if (user.profileImage && user.profileImage.data) {
+      profileImage = `data:${
+        user.profileImage.contentType
+      };base64,${user.profileImage.data.toString("base64")}`;
+    }
+
+    const adminData = {
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      profileImage,
+    };
+    if (user.role === "admin") {
+      return res.json({
+        success: true,
+        user: adminData,
+      });
+    }
+
+    const userData = {
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      active: user.active,
+      profileImage,
+    };
+
+    if (user.role === "user") {
+      return res.json({
+        success: true,
+        user: userData,
+      });
+    }
   } catch (error) {
-    console.error("Error in getUser:", error);
+    console.error("Error in addUser:", error);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -134,7 +197,23 @@ export const getAllUsers = async (req, res) => {
     const users = await User.find({ role: { $ne: "admin" } })
       .select("-password")
       .lean();
-    return res.status(200).json({ success: true, users });
+
+    const usersWithImages = users.map((user) => {
+      let profileImage = null;
+
+      if (user.profileImage && user.profileImage.data) {
+        profileImage = `data:${
+          user.profileImage.contentType
+        };base64,${user.profileImage.data.toString("base64")}`;
+      }
+
+      return {
+        ...user,
+        profileImage,
+      };
+    });
+
+    return res.status(200).json({ success: true, users: usersWithImages });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
     return res
@@ -151,7 +230,7 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     } else {
       await Skill.deleteMany({ user: userId });
-      return res.json({ message: "User deleted successfully" });
+      return res.json({ success: true, message: "User deleted successfully" });
     }
   } catch (error) {
     console.error("Error in getAllUsers:", error);
@@ -171,10 +250,11 @@ export const addUser = async (req, res) => {
     }
 
     const { firstName, lastName, email, password } = req.body;
+    const image = req.file;
 
     // Basic validation
     if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.json({ success: false, message: "All fields are required" });
     }
 
     const userExists = await User.findOne({ email });
@@ -191,6 +271,10 @@ export const addUser = async (req, res) => {
       lastName,
       email,
       password: hashedPassword,
+      profileImage: {
+        data: image.buffer,
+        contentType: image.mimeType,
+      },
     });
 
     await newUser.save();
@@ -218,7 +302,7 @@ export const changeAvailability = async (req, res) => {
     const { userId } = req.params;
     const user = await User.findById(userId);
     if (!user) {
-      return res.json({ message: "User not found" });
+      return res.json({ success: false, message: "User not found" });
     }
 
     user.active = !user.active;
@@ -227,7 +311,9 @@ export const changeAvailability = async (req, res) => {
     return res.json({
       success: true,
       user,
-      message: "Availability changed successfully",
+      message: !user.active
+        ? "User status changed to active."
+        : "User status changed to inactive.",
     });
   } catch (error) {
     console.error("Error in changeAvailability:", error);

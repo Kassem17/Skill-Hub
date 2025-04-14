@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import UserDetails from "./UserDetails";
+import Loader from "../components/Loader";
 
 const SkillDetails = () => {
-  const { skills, token, user, getSkills } = useContext(AppContext);
+  const { skills, token, user, getSkills, backendUrl } = useContext(AppContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const [updatedProgress, setUpdatedProgress] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -23,7 +25,7 @@ const SkillDetails = () => {
   const handleDelete = async (id) => {
     try {
       const { data } = await axios.delete(
-        `http://localhost:5000/api/skills/delete-skill/` + id,
+        backendUrl + `/api/skills/delete-skill/` + id,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -46,7 +48,7 @@ const SkillDetails = () => {
   const saveEditedProgress = async (skill) => {
     try {
       const { data } = await axios.put(
-        `http://localhost:5000/api/skills/update-skill/${skill._id}`,
+        backendUrl + `/api/skills/update-skill/${skill._id}`,
         { progress: updatedProgress[skill._id] },
         {
           headers: {
@@ -67,6 +69,16 @@ const SkillDetails = () => {
       toast.error(error.response?.data?.message || "Something went wrong.");
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return token ? (
     <div className="min-h-screen flex items-center justify-center py-8">

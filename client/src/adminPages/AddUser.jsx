@@ -1,24 +1,34 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import Undefined from "../pages/Undefined";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { FiUploadCloud } from "react-icons/fi";
 
 const AddUser = () => {
-  const { token, user } = useContext(AppContext);
+  const { token, user ,backendUrl } = useContext(AppContext);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [image, setImage] = useState(null);
 
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
+
+      const formData = new FormData();
+      formData.append("firstName", firstName);
+      formData.append("lastName", lastName);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("profileImage", image);
+
       const { data } = await axios.post(
-        "http://localhost:5000/api/user/add-user",
-        { email, password, firstName, lastName },
+        backendUrl+ "/api/user/add-user",
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -31,6 +41,7 @@ const AddUser = () => {
         setLastName("");
         setEmail("");
         setPassword("");
+        setImage(null);
       } else {
         toast.error(data.message);
       }
@@ -59,6 +70,25 @@ const AddUser = () => {
 
         {/* Form */}
         <form className="grid gap-8">
+          {/* Image input */}
+          {/* Image Upload */}
+          <div className="flex items-center">
+            <input
+              type="file"
+              id="fileUpload"
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files[0])}
+              className="hidden"
+            />
+            <label
+              htmlFor="fileUpload"
+              className="flex items-center gap-2 text-sm text-white px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-indigo-500 cursor-pointer hover:brightness-110"
+            >
+              <FiUploadCloud />
+              Upload Image
+            </label>
+          </div>
+
           {/* Row 1: first name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="relative">
@@ -120,8 +150,39 @@ const AddUser = () => {
               />
             </div>
 
-            {/* Row 1: Goal */}
+            {/* Row 2: password */}
+
             <div className="relative">
+              <motion.label
+                htmlFor="password"
+                animate={{
+                  top: password ? -12 : 12,
+                  left: 16,
+                  fontSize: password ? "0.75rem" : "1rem",
+                  color: password ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
+                  backgroundColor: password ? "#ffffff" : "transparent",
+                  padding: password ? "0 0.25rem" : "0",
+                  borderRadius: password ? "0.375rem" : "0",
+                  boxShadow: password ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="absolute pointer-events-none z-10"
+              >
+                Password
+              </motion.label>
+
+              <motion.input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pt-8 pb-3 px-4 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
+                whileFocus={{ scale: 1.02 }}
+              />
+            </div>
+
+            {/* Row 2: email */}
+            <div className="relative ">
               <motion.label
                 htmlFor="email"
                 animate={{
@@ -151,37 +212,6 @@ const AddUser = () => {
             </div>
           </div>
 
-          {/* Row 2: Progress */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="relative">
-              <motion.label
-                htmlFor="password"
-                animate={{
-                  top: password ? -12 : 12,
-                  left: 16,
-                  fontSize: password ? "0.75rem" : "1rem",
-                  color: password ? "#1D4ED8" : "#6B7280", // blue-700 : gray-500
-                  backgroundColor: password ? "#ffffff" : "transparent",
-                  padding: password ? "0 0.25rem" : "0",
-                  borderRadius: password ? "0.375rem" : "0",
-                  boxShadow: password ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="absolute pointer-events-none z-10"
-              >
-                Password
-              </motion.label>
-
-              <motion.input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pt-8 pb-3 px-4 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-md"
-                whileFocus={{ scale: 1.02 }}
-              />
-            </div>
-          </div>
           {/* Row 4: Button */}
           <motion.div
             className="flex justify-center mt-4"

@@ -6,13 +6,12 @@ import Undefined from "./Undefined";
 import { toast } from "react-toastify";
 
 export default function AddSkill() {
-  const { token, setSkills ,getSkills} = useContext(AppContext);
+  const { token, setSkills, getSkills, backendUrl } = useContext(AppContext);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [goal, setGoal] = useState("");
   const [progress, setProgress] = useState("");
-  
 
   const handleSubmit = async (e) => {
     try {
@@ -25,10 +24,8 @@ export default function AddSkill() {
         progress,
       };
 
-      console.log(skillData);
-
       const { data } = await axios.post(
-        "http://localhost:5000/api/skills/add-skill",
+        backendUrl + "/api/skills/add-skill",
         skillData,
         {
           headers: {

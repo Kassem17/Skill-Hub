@@ -18,10 +18,10 @@ const App = () => {
   const { token, user } = useContext(AppContext);
 
   return (
-    <div className="bg-gradient-to-r from-purple-100 via-blue-100 to-pink-100 min-h-screen  flex flex-col">
+    <div className="bg-gradient-to-r from-purple-100 via-blue-100 to-pink-100 min-h-screen flex flex-col">
       <ToastContainer />
       <Navbar />
-      <div className="flex-grow p-8  rounded-2xl mx-auto my-4 max-w-7xl">
+      <div className="flex-grow p-8 rounded-2xl mx-auto my-4 max-w-7xl ">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/skills" element={<SkillDetails />} />
@@ -32,11 +32,10 @@ const App = () => {
             element={token && user.role === "user" ? <AddSkill /> : <AddUser />}
           />
           <Route path="/add-skills" element={<AddSkill />} />
-
           <Route path="/add-users" element={<AddUser />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/loading/path" element={<Loader />} />
+          <Route path="/loader/*" element={<Loader />} />
           <Route path="/*" element={<Undefined />} />
         </Routes>
       </div>

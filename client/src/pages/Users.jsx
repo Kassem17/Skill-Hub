@@ -1,17 +1,18 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom"; // Import Link
+import Loader from "../components/Loader";
+import { AppContext } from "../context/AppContext";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { backendUrl } = useContext(AppContext);
 
   const fetchUsers = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/user/get-users"
-      );
+      const { data } = await axios.get(backendUrl + "/api/user/get-users");
       if (data.success) {
-        console.log(data.users);
         setUsers(data.users);
       } else {
         console.log(data.message);
@@ -24,6 +25,19 @@ const Users = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 4000);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  const initials =
+    users?.firstName?.[0]?.toUpperCase() + users?.lastName?.[0]?.toUpperCase();
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6 text-center">Users</h1>
@@ -35,9 +49,19 @@ const Users = () => {
               user.active ? "bg-green-100" : "bg-red-400"
             }`}
           >
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col rounded-full items-center">
               <div className="w-20 h-20 rounded-full bg-gray-200 mb-4">
-                {/* Placeholder for profile picture */}
+                {user?.profileImage ? (
+                  <img
+                    src={user.profileImage}
+                    alt="User Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : user?.role === "admin" ? (
+                  "A"
+                ) : (
+                  initials
+                )}
               </div>
               <h2 className="text-xl font-semibold text-center mb-2">
                 {user.username}
